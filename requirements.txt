@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+jinja2
+sqlalchemy
+pydantic
+python-multipart
+aiofiles
+openpyxl
+pandas
+starlette   # ✅ 이거 추가!
+itsdangerous

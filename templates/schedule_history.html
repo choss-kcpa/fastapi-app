@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>삭제된 일정 히스토리</title>
+    <link rel="stylesheet" href="/static/global.css?v=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 15px;
+        }
+        th {
+            background-color: #f1f3f5;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            background-color: #4da6ff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-btn:hover {
+            background-color: #1e88e5;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="/select-menu" class="back-btn">← 메뉴로 돌아가기</a>
+    <h1>🗂 삭제된 일정 히스토리</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>제목</th>
+                <th>시작일</th>
+                <th>종료일</th>
+                <th>장소</th>
+                <th>삭제일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in schedules %}
+            <tr>
+                <td>{{ s.title }}</td>
+                <td>{{ s.start_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ s.end_date.strftime('%Y-%m-%d') if s.end_date else '-' }}</td>
+                <td>{{ s.location or '-' }}</td>
+                <td>{{ s.deleted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5">삭제된 일정이 없습니다.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

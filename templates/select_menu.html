@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메뉴 선택</title>
+    <link rel="stylesheet" href="/static/select_styles.css?v=9">
+</head>
+<body>
+    <div class="update-banner">
+        <div class="banner-title">📢 최근 업데이트된 이슈</div>
+        <div class="banner-rolling">
+          <div class="rolling-content" id="rollingContainer">
+            <!-- 자바스크립트가 여기에 3개 이슈 순환 표시 -->
+          </div>
+        </div>
+      </div>
+    <div id="session-timer" style="
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #ffe5e5; /* 연한 빨간색 배경 */
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    z-index: 9999;
+    color: #800000; /* 글자색: 진한 붉은색 (maroon) */
+    font-weight: bold;
+">
+    로그인 남은 시간: <span id="time-left">30:00</span>
+</div>
+    <div class="container">
+        <h1>{{ user.display_name }} 회원님 환영합니다</h1>
+        <h2>원하는 항목을 선택하세요</h2>
+                <div class="menu-buttons">
+            <a href="/issues" class="menu-btn pastel-blue">농약 현안 관리</a>
+            <a href="/review" class="menu-btn pastel-green">현안 검토 건의</a>
+            <a href="/law-update" class="menu-btn pastel-orange">농약관리법 및 고시 개정 현황</a>
+
+            <!-- ✅ 추가 항목 시작 -->
+            <a href="/wg-operation" class="menu-btn pastel-purple">실무협의체(WG) 운영</a>
+            <a href="/supplements" class="menu-btn pastel-pink">등록보완사항 관리</a>
+            <!-- 추가된 항목 -->
+            <a href="/test-review" class="menu-btn pastel-blue">시험설계 검토 및 관리</a> <!-- 새 메뉴 항목 -->
+            <!-- ✅ 추가 항목 끝 -->
+        </div>
+    </div>
+    <div class="logout-container">
+        <a href="/logout" class="logout-btn">로그아웃</a>
+    </div>
+    {% if user.role == "admin" %}
+<div class="admin-panel">
+    <h3>📁 관리자 메뉴</h3>
+    <div class="admin-buttons">
+        <a href="/dashboard" class="admin-btn">📊 통계 대시보드</a>
+        <a href="/schedule/add" class="admin-btn">➕ 일정 추가</a>
+        <a href="/schedule/history" class="admin-btn">📅 일정 히스토리 보기</a>
+        <a href="/admin/export-logins" class="admin-btn">📄 로그인 기록 CSV 다운로드</a>
+    </div>
+</div>
+{% endif %}
+    <script>
+          window.userRole = "{{ user.role }}";
+        let timeLeft = {{ session_seconds }};
+    
+        function formatTime(seconds) {
+            const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const sec = String(seconds % 60).padStart(2, '0');
+            return `${min}:${sec}`;
+        }
+    
+        function updateTimer() {
+            const timerEl = document.getElementById('time-left');
+            timerEl.textContent = formatTime(timeLeft);
+    
+            if (timeLeft > 0) {
+                timeLeft--;
+            } else {
+                alert("세션 시간이 만료되었습니다. 다시 로그인해주세요.");
+                window.location.href = "/logout";  // 세션 만료시 강제 로그아웃
+            }
+        }
+    
+        setInterval(updateTimer, 1000); // 1초마다 갱신
+        let bannerTargetId = null;
+
+        fetch("/api/latest-updates")
+  .then(res => res.json())
+  .then(data => {
+    const container = document.getElementById("rollingContainer");
+    container.innerHTML = "";  // 기존 항목 초기화
+
+    // ✅ 최대 5개 처리
+    const issues = data.map(item => {
+      const div = document.createElement("div");
+      div.className = "rolling-item";
+      div.innerHTML = `
+      <a href="/issue/${item.id}">
+        <span class="issue-date">[ ${item.updated_at} ]</span>
+        <span class="issue-title">${item.name}</span>
+      </a>
+    `;
+      return div;
+    });
+
+    // 두 배로 복사해서 자연스러운 순환
+    issues.forEach(i => container.appendChild(i));
+    issues.forEach(i => container.appendChild(i.cloneNode(true)));
+
+    let index = 0;
+    const total = issues.length;
+
+    setInterval(() => {
+      index++;
+      container.style.transform = `translateY(-${index * 40}px)`;
+
+      if (index >= total) {
+        setTimeout(() => {
+          container.style.transition = "none";
+          container.style.transform = `translateY(0px)`;
+          index = 0;
+          void container.offsetWidth; // 리플로우
+          container.style.transition = "transform 1s ease-in-out";
+        }, 600);
+      }
+    }, 3000);
+  });
+
+  async function loadScheduleWidget() {
+    await fetch("/api/schedule/cleanup", { method: "POST" });
+    const res = await fetch("/api/schedules");
+    const data = await res.json();
+
+    const list = document.getElementById("scheduleList");
+    list.innerHTML = "";
+
+    if (data.length === 0) {
+        list.innerHTML = "<tr><td colspan='4'>예정된 일정 없음</td></tr>";
+        return;
+    }
+
+    for (const item of data) {
+        const tr = document.createElement("tr");
+
+        const dateCell = document.createElement("td");
+        dateCell.style.whiteSpace = "normal";  // 🔥 줄바꿈 허용
+        dateCell.style.wordBreak = "break-word"; // 긴 문자열 줄바꿈
+        dateCell.textContent = item.end_date
+            ? `${item.start_date.replace(/-/g, '.')}~\n${item.end_date.replace(/-/g, '.')}`
+            : item.start_date.replace(/-/g, '.');
+        tr.appendChild(dateCell);
+
+        const titleCell = document.createElement("td");
+        titleCell.textContent = item.title;
+        tr.appendChild(titleCell);
+
+        const locationCell = document.createElement("td");
+        locationCell.textContent = item.location || "";
+        tr.appendChild(locationCell);
+
+        // ✅ 관리자만 삭제 버튼 표시
+        if (window.userRole === "admin") {
+            const deleteCell = document.createElement("td");
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "삭제";
+            deleteBtn.style = "background-color: red; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;";
+            deleteBtn.onclick = async () => {
+                if (confirm("정말 삭제하시겠습니까?")) {
+                    await fetch(`/schedule/delete/${item.id}`, { method: "POST" });
+                    loadScheduleWidget();  // 재로드
+                }
+            };
+            deleteCell.appendChild(deleteBtn);
+            tr.appendChild(deleteCell);
+        }
+
+        list.appendChild(tr);
+    }
+}
+loadScheduleWidget();
+function toggleScheduleWidget() {
+  const widget = document.getElementById('scheduleWidget');
+  const openBtn = document.getElementById('openScheduleBtn');
+  const closeBtn = document.getElementById('closeScheduleBtn');
+
+  if (widget.style.display === 'none') {
+    widget.style.display = 'block';
+    openBtn.style.display = 'none';
+  } else {
+    widget.style.display = 'none';
+    openBtn.style.display = 'block';
+  }
+}
+    </script>
+<div id="scheduleWidget">
+  <div class="widget-header">
+    <h4 class="widget-title">📅 협회 및 관계기관 주요일정</h4>
+    <button onclick="toggleScheduleWidget()" id="closeScheduleBtn" class="widget-close">✖️</button>
+  </div>
+
+  <div class="widget-body">
+    <table class="schedule-table">
+      <thead>
+        <tr>
+          <th style="width: 90px;">일시</th>
+          <th>내용</th>
+          <th style="width: 80px;">장소</th>
+          {% if user.role == 'admin' %}<th style="width: 50px;">삭제</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody id="scheduleList">
+        <!-- 여기에 일정 내용이 들어감 -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 닫은 상태 열기 버튼 -->
+<button onclick="toggleScheduleWidget()" id="openScheduleBtn" class="widget-open-btn">📅 일정 열기</button>
+</body>
+</html>

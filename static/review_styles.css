@@ -1,0 +1,195 @@
+.page-title {
+    text-align: center;
+    font-size: 42px;  /* 기존보다 큼 */
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #003366;
+}
+
+/* 테이블 스타일 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+/* 🔹 첫 번째 행을 옅은 초록색 배경으로 설정 */
+th {
+    background-color: #e8f5e9; /* 옅은 초록색 */
+    font-weight: bold;
+}
+
+/* 🔹 날짜 및 삭제 열은 작게 설정 */
+.small-col {
+    width: 100px;
+}
+
+/* 🔹 내용, 사유, 목표 열 동일한 크기로 설정 */
+.equal-width {
+    width: 28%;
+}
+
+/* 🔹 입력 폼 스타일 */
+form {
+    display: flex;
+    align-items: center;
+}
+
+/* 🔹 건의 입력란을 감싸는 컨테이너 */
+.input-container {
+    margin: 30px auto;  /* 기존보다 위아래 여백 크게 */
+    padding: 15px;
+    background-color: #004629;
+    border-radius: 10px;
+    max-width: 1800px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 🔹 제목 스타일 */
+.input-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color:#ddd
+}
+
+/* 🔹 입력 필드와 버튼을 가로로 정렬 */
+.input-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 15px;
+    background-color: rgb(252, 252, 252);
+    border-radius: 10px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input-box input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* 🔹 버튼 스타일 */
+.submit-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #218838;
+}
+
+.delete-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background-color: #ff3b3b;
+}
+
+/* 🔹 우측 상단 "메뉴 선택으로" 버튼 스타일 */
+.top-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+/* 🔹 메뉴 선택 버튼 (파란색) */
+.menu-btn {
+    background-color: #007BFF;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.menu-btn:hover {
+    background-color: #0056b3;
+}
+
+/* 🔹 로그아웃 버튼 (붉은색 계열) */
+.logout-btn {
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
+}
+
+/* 🔹 페이지네이션 버튼 영역 */
+#pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* 🔹 각 페이지 버튼 스타일 */
+.page-btn {
+    margin: 0 5px;
+    padding: 6px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.page-btn:hover {
+    background-color: #e2e6ea;
+}
+
+/* 🔹 현재 선택된 페이지 강조 */
+.page-btn.active {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to right, #eefaf3, #f9fff9); /* 더 밝고 산뜻한 느낌 */
+    background-attachment: fixed;
+}
+
+#pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.table-wrapper {
+    max-width: 2000px;
+    margin: 0 auto;
+    padding: 0 40px;  /* 좌우 여백 */
+}

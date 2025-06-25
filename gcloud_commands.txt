@@ -1,0 +1,18 @@
+✅ 1. Cloud Build: 앱 빌드 & Docker 이미지 만들기
+gcloud builds submit --tag gcr.io/[프로젝트ID]/fastapi-app
+예시:
+gcloud builds submit --tag gcr.io/kcpa-455507/fastapi-app
+
+✅ 2. Cloud Run: 컨테이너 배포
+gcloud run deploy fastapi-app --image gcr.io/kcpa-455507/fastapi-app --platform managed --region asia-northeast3 --allow-unauthenticated --timeout=60s
+
+예시:
+gcloud run deploy fastapi-app \
+  --image gcr.io/kcpa-455507/fastapi-app \
+  --platform managed \
+  --region asia-northeast3 \
+  --allow-unauthenticated \
+  --timeout=60s
+
+⛔ 3. Cloud Run 종료 (배포 중단/삭제)
+gcloud run services delete fastapi-app --platform managed --region asia-northeast3

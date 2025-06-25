@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>법령 개정 등록</title>
+</head>
+<body>
+    <h2>법령 개정 신규 등록</h2>
+    <form action="/law-update/add" method="post" enctype="multipart/form-data">
+        <input type="text" name="category" placeholder="구분" required><br>
+        <input type="text" name="law_name" placeholder="법령명" required><br>
+        <input type="date" name="proclamation_date" required><br>
+        <input type="date" name="notice_date" placeholder="행정예고 일자"><br>
+        <textarea name="content" placeholder="주요내용" rows="5" required></textarea><br>
+        <input type="file" name="related_files" multiple><br>
+        <button type="submit">등록</button>
+    </form>
+    <a href="/law-update">← 돌아가기</a>
+</body>
+</html>

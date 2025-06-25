@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 목록</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom right, #fffef1, #ffffff); /* 옅은 노란색 그라데이션 */
+    background-attachment: fixed;
+}
+.top-bar {
+    display: flex;
+    justify-content: flex-end; /* 오른쪽 정렬 */
+    align-items: center;
+    padding: 15px 20px;
+    background: transparent;
+    border: none; 
+    box-shadow: none;
+}
+
+.page-title {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    margin: 0px 0 0px;
+    color: #003366;
+}
+
+/* 🔹 버튼 그룹 (로그아웃 & 메뉴 선택) */
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+/* 🔹 공통 버튼 스타일 */
+.button-group button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* 🔹 메뉴 선택 버튼 (연한 파란색) */
+.menu-btn {
+    background-color: #4da6ff; /* 연한 파란색 */
+    color: white;
+}
+
+.menu-btn:hover {
+    background-color: #007acc; /* 더 진한 파란색 */
+}
+
+/* 🔹 로그아웃 버튼 (붉은색 계열) */
+.logout-btn {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.logout-btn:hover {
+    background-color: #cc0000;
+}
+.filter-box {
+    /* 기존 스타일 유지하면서 아래 2줄 추가 */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;      /* ✅ 수직 정렬 */
+    justify-content: center;  /* ✅ 수평 중앙 정렬 */
+    gap: 10px;
+    background: linear-gradient(135deg, #a2e8f1, #a2e8f1);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border: 1px solid #b2ebf2;
+    margin: 20px 0;
+}
+
+/* 🔷 필터 input/select 통일 스타일 */
+.filter-box input,
+.filter-box select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+/* 🔷 초기화 버튼도 통일 */
+.filter-box .reset-btn {
+    border-radius: 8px;
+    font-size: 15px;
+    height: 40px;
+    background-color: #6c757d;
+    color: white;
+}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 2px solid #ebe2e28a;
+            padding: 8px;
+            text-align: center;
+            font-size: 13px;
+        }
+        th {
+            background-color: #f4f4f473;
+        }
+        .btn-container {
+            margin-bottom: 10px;
+        }
+        .add-btn {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+        }
+        .add-btn:hover {
+            background-color: #0056b3;
+        }
+        .download-btn {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+        }
+        .download-btn:hover {
+            background-color: #218838;
+        }
+        .hidden {
+            display: none;
+        }
+        /* ✅ 이슈 목록 다운로드 버튼을 테이블 우측 하단으로 정렬 */
+        .download-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .completed {
+        background-color: #d4edda; /* 옅은 초록색 */
+        }
+        .in-progress {
+        background-color: #fff3cd; /* 옅은 노란색 */
+        }
+        th.sortable {
+        cursor: pointer;
+        }
+        th.sortable:hover {
+        background-color: #e9ecef;
+        }
+        .update-icon {
+        color: #ff4500;
+        font-weight: bold;
+        animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+        50% {
+            opacity: 0.3;
+        }
+        }
+        .content-wrapper {
+    padding: 0 20px; /* 좌우 여백 */
+    max-width: 2000px; /* 너무 넓어지지 않도록 */
+    margin: 0 auto; /* 가운데 정렬 */
+}
+
+        .hidden-issue {
+        background-color: #ffe6e6; /* 연한 분홍색 */
+        }
+    </style>
+</head>
+<body>
+        <!-- ✅ 상단 네비게이션 (로그아웃 버튼 포함) -->
+    <div class="top-bar">
+
+        <div class="button-group">
+            <button class="menu-btn" onclick="location.href='/select-menu'">메뉴 선택으로</button>
+            <button class="logout-btn" onclick="location.href='/logout'">로그아웃</button>
+        </div>
+    </div>
+    <h2 class="page-title">이슈 목록</h2>
+    <!-- ✅ 검색 필터 추가 -->
+    <div class="content-wrapper">
+    <div class="filter-box">
+    <input type="text" class="search-bar" id="searchInput" placeholder="이슈명 검색..." onkeyup="filterIssues()">
+        <label>발생일:</label>
+    <input type="date" class="date-filter" id="startDate" onchange="filterIssues()">
+    <input type="date" class="date-filter" id="endDate" onchange="filterIssues()">
+    <label>대응기간:</label>
+<select id="filterPeriod" class="search-bar" onchange="filterIssues()">
+    <option value="">전체</option>
+    <option value="단기">단기</option>
+    <option value="중기">중기</option>
+    <option value="장기">장기</option>
+</select>
+
+<label>카테고리:</label>
+<select id="filterCategory" class="search-bar" onchange="filterIssues()">
+    <option value="">전체</option>
+    <option value="제도">제도</option>
+    <option value="안전성">안전성</option>
+    <option value="기타">기타</option>
+    <!-- 필요시 더 추가 -->
+</select>
+
+<label>정부 관계자:</label>
+<input type="text" id="filterGov" class="search-bar" placeholder="정부 관계자 검색..." onkeyup="filterIssues()">
+
+<label>Business Impact:</label>
+<select id="filterImpact" class="search-bar" onchange="filterIssues()">
+    <option value="">전체</option>
+    <option value="High">High</option>
+    <option value="Medium">Medium</option>
+    <option value="Low">Low</option>
+</select>
+    <button class="reset-btn" onclick="resetFilters()">초기화</button>
+</div>
+
+    <!-- ✅ "이슈 추가" 버튼 (관리자만 보이게) -->
+    <div class="btn-container admin-only">
+        <button class="add-btn" onclick="location.href='/create-issue'">+ 이슈 추가</button>
+        <button class="add-btn" onclick="location.href='/upload-excel'">📂 Excel 업로드</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th class="sortable" onclick="sortIssues('issue_number')">이슈 번호</th>
+                <th class="sortable" onclick="sortIssues('issue_name')">이슈명</th>
+                <th class="sortable" onclick="sortIssues('issue_date')">발생일</th>
+                <th class="sortable" onclick="sortIssues('response_period')">대응기간</th>
+                <th class="sortable" onclick="sortIssues('category')">카테고리</th>
+                <th class="sortable" onclick="sortIssues('response_team')">대응팀</th>
+                <th class="sortable" onclick="sortIssues('government_officials')">정부 관계자</th>
+                <th class="sortable" onclick="sortIssues('business_impact')">Business Impact</th>
+                <th class="sortable" onclick="sortIssues('kpi')">KPI</th>
+                <th class="sortable" onclick="sortIssues('issue_end_date')">이슈 종료일(예정일)</th>
+                <th class="sortable" onclick="sortIssues('stakeholders')">이해관계자</th>
+                <th class="sortable" onclick="sortIssues('completion_status')">완료 여부</th>
+                <th class="admin-only">수정</th>
+                <th class="admin-only">삭제</th>
+            </tr>
+        </thead>
+        <tbody id="issueTableBody">
+            <!-- JavaScript로 데이터 채우기 -->
+        </tbody>
+    </table>
+
+    <!-- ✅ 이슈 목록 다운로드 버튼을 테이블 우측 하단에 배치 -->
+    <div class="download-btn-container">
+    </div>
+        <button class="download-btn" onclick="downloadExcel()">📥 이슈목록 다운로드</button>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const pageSize = 12; // 한 페이지당 보여줄 항목 수
+        let currentSortColumn = null;
+let currentSortOrder = "asc";
+
+function sortIssues(column) {
+    // 정렬 순서 토글
+    if (currentSortColumn === column) {
+        currentSortOrder = currentSortOrder === "asc" ? "desc" : "asc";
+    } else {
+        currentSortOrder = "asc";
+        currentSortColumn = column;
+    }
+
+    allIssues.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+
+        // 숫자 형식이면 숫자로 비교
+        if (!isNaN(valueA) && !isNaN(valueB)) {
+            valueA = parseFloat(valueA);
+            valueB = parseFloat(valueB);
+        } else {
+            valueA = valueA ? valueA.toString().toLowerCase() : "";
+            valueB = valueB ? valueB.toString().toLowerCase() : "";
+        }
+
+        if (valueA < valueB) return currentSortOrder === "asc" ? -1 : 1;
+        if (valueA > valueB) return currentSortOrder === "asc" ? 1 : -1;
+        return 0;
+    });
+
+    displayIssues(allIssues); // 정렬 후 목록 다시 표시
+}
+        function filterIssues() {
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+            const selectedPeriod = document.getElementById("filterPeriod").value;
+            const selectedCategory = document.getElementById("filterCategory").value;
+            const govKeyword = document.getElementById("filterGov").value.toLowerCase();
+            const selectedImpact = document.getElementById("filterImpact").value;
+
+            const filteredIssues = allIssues.filter(issue => {
+            const issueNameMatch = issue.issue_name.toLowerCase().includes(searchInput);
+            const issueDateMatch = (!startDate || issue.issue_date >= startDate) && (!endDate || issue.issue_date <= endDate);
+            const periodMatch = !selectedPeriod || issue.response_period === selectedPeriod;
+            const categoryMatch = !selectedCategory || issue.category === selectedCategory;
+            const govMatch = !govKeyword || issue.government_officials.toLowerCase().includes(govKeyword);
+            const impactMatch = !selectedImpact || issue.business_impact === selectedImpact;
+
+    return issueNameMatch && issueDateMatch && periodMatch && categoryMatch && govMatch && impactMatch;
+});
+
+            displayIssues(filteredIssues);
+        }
+
+        function resetFilters() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("startDate").value = "";
+            document.getElementById("endDate").value = "";
+            document.getElementById("filterPeriod").value = "";
+            document.getElementById("filterCategory").value = "";
+            document.getElementById("filterGov").value = "";
+            document.getElementById("filterImpact").value = "";
+            displayIssues(allIssues);
+        }
+        
+        let isAdmin = false;
+
+        async function checkUserRole() {
+            try {
+                const response = await fetch("/current-user");
+                const data = await response.json();
+
+                if (data.role === "admin") {
+                    isAdmin = true;
+                }
+
+                // ✅ 이용자(user)일 경우 버튼 숨김
+                if (!isAdmin) {
+                    document.querySelectorAll(".admin-only").forEach(el => el.classList.add("hidden"));
+                }
+            } catch (error) {
+                console.error("사용자 정보를 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        let allIssues = []; // 🔥 모든 이슈 데이터를 저장할 변수
+
+        async function loadIssues() {
+    try {
+        const response = await fetch("/issues-data", {
+    credentials: "include"  // ✅ 세션 기반 인증 위해 꼭 필요
+}); // ✅ 인증 없이 작동하는 API 사용
+        const data = await response.json();
+        allIssues = data.data; // ✅ 전체 이슈 데이터 저장
+
+        // 🔥 발생일 기준 최신순으로 정렬
+        allIssues.sort((a, b) => {
+            const dateA = new Date(a.issue_date);
+            const dateB = new Date(b.issue_date);
+            return dateB - dateA; // 최신순으로 정렬
+        });
+
+        displayIssues(allIssues);
+    } catch (error) {
+        console.error("데이터를 불러오는 중 오류 발생:", error);
+    }
+}
+
+        async function updateIssue(issueId) {
+    const formData = new FormData(document.getElementById("editIssueForm"));
+
+    const issueData = {
+        issue_number: formData.get("issue_number"),
+        issue_name: formData.get("issue_name"),
+        issue_date: formData.get("issue_date"),
+        response_period: formData.get("response_period"),
+        category: formData.get("category"),
+        response_team: formData.get("response_team"),
+        government_officials: formData.get("government_officials"),
+        business_impact: formData.get("business_impact"),
+        kpi: formData.get("kpi"),
+        issue_end_date: formData.get("issue_end_date"),
+        stakeholders: formData.get("stakeholders"),
+        result_summary: formData.get("result_summary"),
+        completion_status: formData.get("completion_status"),
+        other_remarks: formData.get("other_remarks")
+    };
+
+    const response = await fetch(`/issues/${issueId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(issueData)
+    });
+
+    if (response.ok) {
+        alert("이슈가 수정되었습니다.");
+        window.location.href = "/"; // ✅ 수정 후 이슈 목록으로 이동
+    } else {
+        const data = await response.json();
+        alert("수정 실패: " + data.detail);
+    }
+}
+
+function formatValue(value) {
+    return value ? value : "-";  // 값이 없으면 "-"로 표시
+}
+
+function displayIssues(issues) {
+    const tableBody = document.getElementById("issueTableBody");
+    tableBody.innerHTML = "";
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedIssues = issues.slice(startIndex, endIndex);
+
+    paginatedIssues.forEach(issue => {
+        const row = document.createElement("tr");
+            // ✅ 숨김 이슈일 경우 분홍색 음영 처리
+        if (issue.is_hidden) {
+            row.classList.add("hidden-issue");
+        }
+        if (issue.completion_status === "완료") {
+            row.classList.add("completed");
+        } else if (issue.completion_status === "진행중") {
+            row.classList.add("in-progress");
+        }
+
+        const isUpdated = (new Date() - new Date(issue.updated_at)) / (1000 * 60 * 60 * 24) <= 15;
+        const updateIcon = isUpdated ? '<span class="update-icon">★UPDATE★</span>' : '';
+
+        row.innerHTML = `
+            <td>${formatValue(issue.issue_number)}</td>
+            <td><a href="/issue/${issue.id}">${formatValue(issue.issue_name)}</a> ${updateIcon}</td>
+            <td>${formatValue(issue.issue_date)}</td>
+            <td>${formatValue(issue.response_period)}</td>
+            <td>${formatValue(issue.category)}</td>
+            <td>${formatValue(issue.response_team)}</td>
+            <td>${formatValue(issue.government_officials)}</td>
+            <td>${formatValue(issue.business_impact)}</td>
+            <td>${formatValue(issue.kpi)}</td>
+            <td>${issue.issue_end_date ? issue.issue_end_date : '미정'}</td>
+            <td>${formatValue(issue.stakeholders)}</td>
+            <td>${formatValue(issue.completion_status)}</td>
+            <td class="admin-only"><a href="/edit-issue/${issue.id}">수정</a></td>
+            <td class="admin-only"><button onclick="deleteIssue(${issue.id})">삭제</button></td>
+        `;
+        tableBody.appendChild(row);
+    });
+
+    renderPagination(issues.length);
+    checkUserRole();
+}
+
+
+function renderPagination(totalItems) {
+    const existing = document.getElementById("pagination");
+    if (existing) existing.remove();
+
+    const totalPages = Math.ceil(totalItems / pageSize);
+    if (totalPages <= 1) return;
+
+    const container = document.createElement("div");
+    container.id = "pagination";
+    container.style.textAlign = "center";
+    container.style.marginTop = "20px";
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.style.margin = "0 5px";
+        btn.style.padding = "6px 12px";
+        btn.style.fontWeight = i === currentPage ? "bold" : "normal";
+        btn.onclick = () => {
+            currentPage = i;
+            displayIssues(allIssues);
+        };
+        container.appendChild(btn);
+    }
+
+    document.body.appendChild(container);
+}
+
+        async function deleteIssue(issueId) {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+
+            const response = await fetch(`/issues/${issueId}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                alert("이슈가 삭제되었습니다.");
+                location.reload(); // ✅ 삭제 후 새로고침
+            } else {
+                const data = await response.json();
+                alert("삭제 실패: " + data.detail);
+            }
+        }
+
+        function downloadExcel() {
+            window.location.href = "/download-excel/";
+        }
+
+        checkUserRole();
+        loadIssues();
+    </script>
+
+</body>
+</html>

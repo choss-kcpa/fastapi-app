@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 수정</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);  /* 2열 구성 */
+            gap: 10px 40px;
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        .company-item {
+            display: grid;
+            grid-template-columns: auto 20px; /* 왼쪽: 이름 / 오른쪽: 체크박스 고정 너비 */
+            align-items: center;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>이슈 수정</h2>
+    <form id="editIssueForm">
+        <input type="hidden" id="issue_id">
+
+        <label>이슈 번호:</label>
+        <input type="text" id="issue_number" required>
+
+        <label>이슈명:</label>
+        <input type="text" id="issue_name" required>
+
+        <label>발생일:</label>
+        <input type="date" id="issue_date" required>
+
+        <label>대응기간:</label>
+        <select id="response_period">
+            <option value="단기">단기</option>
+            <option value="중기">중기</option>
+            <option value="장기">장기</option>
+        </select>
+
+        <label>카테고리:</label>
+        <select id="category">
+            <option value="제도">제도</option>
+            <option value="생물">생물</option>
+            <option value="안전성">안전성</option>
+            <option value="기타">기타</option>
+        </select>
+
+        <label>대응팀:</label>
+        <input type="text" id="response_team" required>
+
+        <label>정부 관계자:</label>
+        <input type="text" id="government_officials" required>
+
+        <label>Business Impact:</label>
+        <select id="business_impact">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+
+        <label>KPI:</label>
+        <input type="text" id="kpi" required>
+
+        <label>이슈 종료일(예정일):</label>
+        <input type="date" id="issue_end_date" required>
+
+        <label>이해관계자:</label>
+        <input type="text" id="stakeholders" required>
+
+        <label>결과 요약:</label>
+        <textarea id="result_summary" required></textarea>
+
+        <label>완료 여부:</label>
+        <select id="completion_status">
+            <option value="진행중">진행중</option>
+            <option value="완료">완료</option>
+        </select>
+
+        <label>기타 사항:</label>
+        <textarea id="other_remarks"></textarea>
+
+        <label>
+            <input type="checkbox" name="is_hidden" id="is_hidden" {% if issue.is_hidden %}checked{% endif %}>
+            이 이슈를 일반 사용자에게 숨기기
+        </label>
+        <div style="color: #555; font-size: 13px; margin-bottom: 10px;">
+            ※ 숨김 이슈라도 공유대상 회사는 이슈 목록에서 확인할 수 있습니다.
+        </div>
+        
+        <label>
+            <input type="checkbox" disabled {% if issue.authorized_users %}checked{% endif %}>
+            공유 대상 설정됨
+        </label>
+        
+        <label><strong>이슈 공유 대상 (회사별 체크박스)</strong></label>
+        
+        <div class="company-grid">
+            {% for username, user in USERS.items() %}
+                {% if user.role == 'user' %}
+                <div class="company-item">
+                    <span>{{ user.display_name }}</span>
+                    <input type="checkbox" name="authorized_users" value="{{ username }}"
+                        {% if issue and issue.authorized_users and (',' ~ username ~ ',') in issue.authorized_users %}checked{% endif %}>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <button type="button" onclick="updateIssue()">이슈 수정</button>
+    </form>
+
+    <script>
+        async function loadIssue() {
+            const issueId = window.location.pathname.split("/").pop();
+            const response = await fetch(`/issues/${issueId}`);
+            const data = await response.json();
+            const issue = data.data;
+    
+            document.getElementById("issue_id").value = issueId;
+            document.getElementById("issue_number").value = issue.issue_number;
+            document.getElementById("issue_name").value = issue.issue_name;
+            document.getElementById("issue_date").value = issue.issue_date;
+            document.getElementById("response_period").value = issue.response_period;
+            document.getElementById("category").value = issue.category;
+            document.getElementById("response_team").value = issue.response_team;
+            document.getElementById("government_officials").value = issue.government_officials;
+            document.getElementById("business_impact").value = issue.business_impact;
+            document.getElementById("kpi").value = issue.kpi;
+            document.getElementById("issue_end_date").value = issue.issue_end_date;
+            document.getElementById("stakeholders").value = issue.stakeholders;
+            document.getElementById("result_summary").value = issue.result_summary;
+            document.getElementById("completion_status").value = issue.completion_status;
+            document.getElementById("other_remarks").value = issue.other_remarks;
+            document.getElementById("is_hidden").checked = issue.is_hidden;
+    
+            // ✅ authorized_users 값 처리 (체크박스 선택)
+            if (issue.authorized_users) {
+                const selectedUsers = issue.authorized_users.split(",");
+                selectedUsers.forEach(username => {
+                    const checkbox = document.querySelector(`input[name="authorized_users"][value="${username}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+        }  // ← ✅ 이 중괄호 추가!!
+    
+        async function updateIssue() {
+            const issueId = document.getElementById("issue_id").value;
+    
+            const checkboxes = document.querySelectorAll("input[name='authorized_users']:checked");
+            const authorizedUsers = Array.from(checkboxes).map(cb => cb.value);
+    
+            const issueData = {
+                issue_number: document.getElementById("issue_number").value,
+                issue_name: document.getElementById("issue_name").value,
+                issue_date: document.getElementById("issue_date").value,
+                response_period: document.getElementById("response_period").value,
+                category: document.getElementById("category").value,
+                response_team: document.getElementById("response_team").value,
+                government_officials: document.getElementById("government_officials").value,
+                business_impact: document.getElementById("business_impact").value,
+                kpi: document.getElementById("kpi").value,
+                issue_end_date: document.getElementById("issue_end_date").value,
+                stakeholders: document.getElementById("stakeholders").value,
+                result_summary: document.getElementById("result_summary").value,
+                completion_status: document.getElementById("completion_status").value,
+                other_remarks: document.getElementById("other_remarks").value,
+                is_hidden: document.getElementById("is_hidden").checked,
+                authorized_users: authorizedUsers
+            };
+    
+            const response = await fetch(`/issues/${issueId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(issueData)
+            });
+    
+            if (response.ok) {
+                alert("이슈가 수정되었습니다.");
+                window.location.href = "/issues";
+            } else {
+                const data = await response.json();
+                alert("수정 실패: " + data.detail);
+            }
+        }
+    
+        loadIssue();
+    </script>
+
+</body>
+</html>

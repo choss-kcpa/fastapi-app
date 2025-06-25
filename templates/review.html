@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>현안 검토 건의</title>
+    <link rel="stylesheet" href="/static/review_styles.css?v=2">
+</head>
+<body>
+    <h1 class="page-title">현안 검토 건의</h1>
+
+    <div class="top-right">
+        <a href="/select-menu" class="menu-btn">메뉴 선택으로</a>
+        <a href="/logout" class="logout-btn">로그아웃</a>
+    </div>
+
+    <div class="input-container">
+        <h2 class="input-title">건의 입력란</h2>
+        
+        <!-- 🔹 가로 입력 폼 -->
+        <form method="post" action="/review/add" class="input-box">
+            <input type="date" id="date" name="date" required>
+            <input type="text" id="content" name="content" placeholder="내용" required>
+            <input type="text" id="reason" name="reason" placeholder="사유" required>
+            <input type="text" id="goal" name="goal" placeholder="목표" required>
+            <button type="submit" class="submit-btn">저장</button>
+        </form>
+    </div>
+
+    <!-- 🔹 검토 건의 테이블 -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th class="small-col">날짜</th>
+                    <th class="equal-width">내용</th>
+                    <th class="equal-width">사유</th>
+                    <th class="equal-width">목표</th>
+                    {% if user.role == "admin" %}
+                    <th class="small-col">삭제</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody id="reviewTableBody">
+                {% for review in reviews %}
+                <tr>
+                    <td>{{ review.date }}</td>
+                    <td>{{ review.content }}</td>
+                    <td>{{ review.reason }}</td>
+                    <td>{{ review.goal }}</td>
+                    <td>
+                        {% if user.role == "admin" %}
+                        <form action="/review/delete/{{ review.id }}" method="post">
+                            <button type="submit" class="delete-btn" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">등록된 검토 건의가 없습니다.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="pagination"></div>
+
+    <script>
+        const reviews = {{ reviews | tojson | safe }};
+        const isAdmin = "{{ user.role }}" === "admin";
+
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        function displayReviews() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginated = reviews.slice(start, end);
+
+            const tbody = document.getElementById("reviewTableBody");
+            tbody.innerHTML = "";
+
+            if (paginated.length === 0) {
+                const colspan = isAdmin ? 5 : 4;
+                tbody.innerHTML = `<tr><td colspan="${colspan}">등록된 검토 건의가 없습니다.</td></tr>`;
+                return;
+            }
+
+            paginated.forEach(review => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${review.date}</td>
+                    <td>${review.content}</td>
+                    <td>${review.reason}</td>
+                    <td>${review.goal}</td>
+                    ${isAdmin ? `
+                        <td>
+                            <form action="/review/delete/${review.id}" method="post">
+                                <button type="submit" class="delete-btn" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+                            </form>
+                        </td>
+                    ` : ""}
+                `;
+                tbody.appendChild(tr);
+            });
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(reviews.length / itemsPerPage);
+            const pagination = document.getElementById("pagination");
+            pagination.innerHTML = "";
+
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement("button");
+                btn.innerText = i;
+                btn.style.margin = "0 5px";
+                btn.style.padding = "5px 10px";
+                if (i === currentPage) btn.style.fontWeight = "bold";
+
+                btn.onclick = () => {
+                    currentPage = i;
+                    displayReviews();
+                };
+
+                pagination.appendChild(btn);
+            }
+        }
+
+        displayReviews();
+    </script>
+</body>
+</html>

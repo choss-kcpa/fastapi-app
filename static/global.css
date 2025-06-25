@@ -1,0 +1,154 @@
+/* 전체 배경 및 폰트 */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    background: linear-gradient(to bottom right, #fffef1, #ffffff);
+}
+
+/* 상단 버튼 바 */
+.top-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 20px;
+}
+.top-bar a {
+    background-color: #4da6ff;
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 6px;
+}
+
+/* 제목 */
+h1 {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    margin: 40px 0 20px 0;
+    color: #003366;
+}
+
+/* 검색 필터 */
+.filter-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #a2e8f1, #a2e8f1);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px;
+}
+.filter-box input,
+.filter-box select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.reset-btn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* 추가 버튼 영역 */
+.add-form {
+    text-align: center;
+    margin-top: 10px;
+}
+.add-form input,
+.add-form select {
+    padding: 6px 10px;
+    margin: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+.add-button {
+    padding: 8px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.add-button:hover {
+    background-color: #218838;
+}
+
+/* 테이블 스타일 */
+table {
+    width: 95%;
+    margin: 0 auto 40px auto;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+th, td {
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+}
+th {
+    background-color: #e3f2fd;
+    color: #003366;
+}
+
+/* 긴 텍스트 컬럼 */
+.multiline {
+    white-space: pre-line;
+    text-align: left;
+}
+
+/* 셀 너비 고정 */
+td:nth-child(1),  /* 보완날짜 */
+td:nth-child(2),  /* 보완분야 */
+td:nth-child(3) { /* 대응주체 */
+    min-width: 100px;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 삭제 버튼 */
+button.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+button.delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* 페이지네이션 */
+.pagination {
+    text-align: center;
+    margin: 20px 0;
+}
+.pagination a {
+    display: inline-block;
+    margin: 0 5px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #003366;
+    background: #e0ecff;
+    font-weight: bold;
+}
+.pagination a.active {
+    background-color: #003366;
+    color: white;
+}

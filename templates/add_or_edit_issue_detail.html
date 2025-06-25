@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ mode }} 세부 진행 사항</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, textarea {
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        @media screen and (max-width: 600px) {
+    body {
+        margin: 10px;
+    }
+
+    form {
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    input, textarea {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 16px;
+        padding: 12px;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    h2 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    label {
+        font-size: 16px;
+    }
+}
+    </style>
+</head>
+<body>
+
+<h2>{{ mode }} 세부 진행 사항</h2>
+
+<form id="detailForm">
+    <label>날짜:</label>
+    <input type="date" id="date" value="{{ detail.date if detail else '' }}" required>
+
+    <label>내용:</label>
+    <textarea id="content" required>{{ detail.content if detail else '' }}</textarea>
+
+    {% if mode == "추가" %}
+    <button type="button" onclick="submitDetail()">추가</button>
+    {% else %}
+    <button type="button" onclick="updateDetail({{ detail.id }})">수정</button>
+    {% endif %}
+</form>
+
+{% if mode == "추가" %}
+<h3>파일 업로드</h3>
+<input type="file" id="fileInput" multiple>
+{% endif %}
+
+<script>
+    async function submitDetail() {
+        const issueId = window.location.pathname.split("/")[2];
+        const formData = new FormData();
+        formData.append("date", document.getElementById("date").value);
+        formData.append("content", document.getElementById("content").value);
+
+        const files = document.getElementById("fileInput").files;
+        for (const file of files) {
+            formData.append("files", file);
+        }
+
+        const response = await fetch(`/issues/${issueId}/details`, {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+        alert(result.message || "등록 완료");
+        if (response.ok) {
+            window.location.href = `/issue/${issueId}`;
+        }
+    }
+
+    async function updateDetail(detailId) {
+        const response = await fetch(`/issues/detail/${detailId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                date: document.getElementById("date").value,
+                content: document.getElementById("content").value
+            })
+        });
+
+        const result = await response.json();
+        alert(result.message || "수정 완료");
+        if (response.ok) {
+            history.back();  // 이전 페이지로 돌아가기
+        }
+    }
+</script>
+
+</body>
+</html>

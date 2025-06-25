@@ -1,0 +1,26 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}기본 페이지{% endblock %}</title>
+    <link rel="stylesheet" href="/static/global.css?v=2">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="top-bar">
+        <h2>농약 관리 시스템</h2>
+    </div>
+
+    <div class="content-wrapper">
+        {% block content %}
+        <!-- 각 페이지의 내용이 여기에 삽입됩니다 -->
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p style="text-align:center; color:gray;">© 2025 KCPA</p>
+    </footer>
+</body>
+</html>

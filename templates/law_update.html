@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>법령 개정 현황</title>
+    <link rel="stylesheet" href="/static/law_update_styles.css?v=5">
+</head>
+<body>
+    <!-- 우측 상단 버튼 -->
+    <div class="top-buttons">
+        <button class="menu-button" onclick="location.href='/select-menu'">메뉴 선택으로</button>
+        <button class="logout-button" onclick="location.href='/logout'">로그아웃</button>
+    </div>
+
+    <h1>법령 개정 현황</h1>
+
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="categoryFilter" placeholder="구별 검색" oninput="filterLawUpdates()" />
+        <input type="text" id="lawNameFilter" placeholder="법령명 검색" oninput="filterLawUpdates()" />
+        <input type="date" id="dateFilter" oninput="filterLawUpdates()" />
+        <input type="text" id="contentFilter" placeholder="주요내용 검색" oninput="filterLawUpdates()" />
+        <button onclick="resetLawFilters()">초기화</button>
+    </div>
+    {% if user.role == 'admin' %}
+    <div style="text-align: right; margin: 10px 20px;">
+        <a href="/law-update/add-form" class="add-button">➕ 새 법령 추가</a>
+    </div>
+{% endif %}
+    <!-- 법령 개정 현황 테이블 -->
+    <table>
+        <thead>
+            <tr>
+                <th class="sortable" onclick="sortAmendments('category')">구별</th>
+                <th class="sortable" onclick="sortAmendments('law_name')">법령명</th>
+                <th class="sortable" onclick="sortAmendments('proclamation_date')">공포일자</th>
+                <th class="sortable" onclick="sortAmendments('content')">주요내용</th>
+                <th>관련 자료</th>
+                <th class="sortable" onclick="sortAmendments('notice_date')">행정예고 일자</th>
+                {% if user.role == 'admin' %}
+                <th class="delete">삭제</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody id="amendmentTableBody">
+            <!-- JavaScript 에서 자동 로드 됩니다 -->
+        </tbody>
+    </table>
+
+    <div id="pagination" style="text-align:center; margin-top:20px;"></div>
+
+    <script>
+    window.userRole = "{{ user.role }}";
+    let currentSortColumn = null;
+    let currentSortOrder = "asc";
+    let allLaws = [];
+    const itemsPerPage = 5;
+    let currentPage = 1;
+
+    function loadLawUpdates() {
+        fetch("/law-update-data")
+            .then(res => res.json())
+            .then(data => {
+                allLaws = data;
+                currentPage = 1;
+                displayLaws(allLaws);
+            });
+    }
+
+    function filterLawUpdates() {
+        const category = document.getElementById("categoryFilter").value.toLowerCase();
+        const lawName = document.getElementById("lawNameFilter").value.toLowerCase();
+        const date = document.getElementById("dateFilter").value;
+        const content = document.getElementById("contentFilter").value.toLowerCase();
+
+        const filtered = allLaws.filter(item =>
+            (!category || item.category.toLowerCase().includes(category)) &&
+            (!lawName || item.law_name.toLowerCase().includes(lawName)) &&
+            (!date || item.proclamation_date === date) &&
+            (!content || item.content.toLowerCase().includes(content))
+        );
+
+        displayLaws(filtered);
+    }
+
+    function resetLawFilters() {
+        document.getElementById("categoryFilter").value = "";
+        document.getElementById("lawNameFilter").value = "";
+        document.getElementById("dateFilter").value = "";
+        document.getElementById("contentFilter").value = "";
+
+        displayLaws(allLaws);
+    }
+
+    function displayLaws(data) {
+        const tbody = document.querySelector("#amendmentTableBody");
+        tbody.innerHTML = "";
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pageData = data.slice(start, end);
+
+        pageData.forEach(item => {
+            const row = document.createElement("tr");
+            const fileLinks = item.file_list && item.file_list.length > 0
+                ? item.file_list.map(f => `<div style="margin-bottom: 6px;"><a href="/files/${f}" download>${f.split('/').pop()}</a></div>`).join('')
+                : '없음';
+
+            row.innerHTML = `
+                <td>${item.category}</td>
+                <td>${item.law_name}</td>
+                <td>${item.proclamation_date}</td>
+                <td class="multiline" style="white-space: pre-wrap; text-align: left;">${item.content}</td>
+                <td class="related-file">${fileLinks}</td>
+                <td>${item.notice_date || ""}</td>
+                ${window.userRole === 'admin' ? `
+                <td>
+                    <form action="/law-update/edit/${item.id}" method="get" style="display:inline-block;">
+                        <button type="submit" class="edit-btn">수정</button>
+                    </form>
+                    <form action="/law-update/delete/${item.id}" method="post" style="display:inline-block;">
+                        <button type="submit" class="delete-btn">삭제</button>
+                    </form>
+                </td>` : ''}
+            `;
+            tbody.appendChild(row);
+        });
+
+        renderPagination(data);
+    }
+
+    function sortAmendments(column) {
+        allLaws.sort((a, b) => {
+            let valueA = a[column];
+            let valueB = b[column];
+
+            if (column === "proclamation_date" || column === "notice_date") {
+                valueA = new Date(valueA);
+                valueB = new Date(valueB);
+            }
+
+            valueA = valueA ? valueA.toString().toLowerCase() : "";
+            valueB = valueB ? valueB.toString().toLowerCase() : "";
+
+            if (valueA < valueB) return currentSortOrder === "asc" ? -1 : 1;
+            if (valueA > valueB) return currentSortOrder === "asc" ? 1 : -1;
+            return 0;
+        });
+
+        displayLaws(allLaws);
+    }
+
+    function renderPagination(data) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const totalPages = Math.ceil(data.length / itemsPerPage);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.innerText = i;
+            btn.style.margin = "0 5px";
+            btn.style.padding = "5px 10px";
+            btn.style.cursor = "pointer";
+            if (i === currentPage) btn.style.fontWeight = "bold";
+
+            btn.onclick = () => {
+                currentPage = i;
+                displayLaws(data);
+            };
+            pagination.appendChild(btn);
+        }
+    }
+
+    window.onload = loadLawUpdates;
+    </script>
+</body>
+</html>

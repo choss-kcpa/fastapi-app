@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>법령 개정 수정</title>
+</head>
+<body>
+    <h2>법령 개정 수정</h2>
+    <form action="/law-update/edit/{{ law.id }}" method="post">
+        <input type="text" name="category" value="{{ law.category }}" required><br>
+        <input type="text" name="law_name" value="{{ law.law_name }}" required><br>
+        <input type="date" name="proclamation_date" value="{{ law.proclamation_date }}"><br>
+        <input type="date" name="notice_date" value="{{ law.notice_date }}"><br>
+        <textarea name="content" rows="5">{{ law.content }}</textarea><br>
+        <button type="submit">저장</button>
+    </form>
+    <a href="/law-update">← 돌아가기</a>
+</body>
+</html>

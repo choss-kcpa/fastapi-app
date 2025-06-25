@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>알림 구독자 목록</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 600px;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        th {
+            background: #eee;
+        }
+        button {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>📧 이슈 알림 구독자 목록</h2>
+    <table>
+        <tr>
+            <th>이메일</th>
+            <th>신청일</th>
+            <th>삭제</th>
+        </tr>
+        {% for sub in subscribers %}
+        <tr>
+            <td>{{ sub.email }}</td>
+            <td>{{ sub.subscribed_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>
+                <form method="post" action="/alert-subscribers/delete/{{ sub.id }}">
+                    <button type="submit">삭제</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

@@ -1,0 +1,2 @@
+구글클라우드 서버 구축 주소
+https://fastapi-app-837523657780.asia-northeast3.run.app

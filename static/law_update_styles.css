@@ -1,0 +1,269 @@
+/* 기본 스타일 */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    background-attachment: fixed;
+}
+
+/* 페이지 제목 */
+h1 {
+    text-align: center;
+    font-size: 42px;
+    font-weight: bold;
+    margin: 40px 0 20px 0;
+    color: #003366;
+}
+.add-form, .top-buttons {
+    margin: 20px;
+    text-align: center;
+}
+
+table {
+    width: 95%;
+    margin: 30px auto;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    background-color: white;
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    text-align: center;
+    font-size: 15px;
+}
+
+th {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    font-weight: bold;
+}
+
+button {
+    padding: 6px 12px;
+    margin: 4px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.delete-btn {
+    background-color: #28a745;
+}
+
+.delete-btn:hover {
+    background-color: #218838;
+}
+
+/* 입력란 스타일 */
+input, select, textarea {
+    width: 300px;
+    padding: 8px;
+    margin: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+input[type="date"] {
+    width: 200px;
+}
+
+textarea {
+    height: 60px;
+    resize: vertical;
+}
+
+/* 우측 상단 버튼 스타일 */
+.top-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.top-buttons button {
+    margin-left: 5px;
+    padding: 8px 16px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* 메뉴 선택 버튼 스타일 */
+.menu-button {
+    background-color: #0056b3;
+}
+
+.menu-button:hover {
+    background-color: #004494;
+}
+
+/* 로그아웃 버튼 스타일 */
+.logout-button {
+    background-color: #f02f42;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
+}
+
+/* 추가 버튼 스타일 */
+.add-button {
+    background-color: #28a745;
+}
+
+.add-button:hover {
+    background-color: #218838;
+}
+
+/* 테이블 컬럼 너비 조정 */
+th.category, td.category {
+    width: 15%;
+}
+
+th.law_name, td.law_name {
+    width: 30%;
+}
+
+th.date, td.date {
+    width: 15%;
+}
+
+th.content, td.content {
+    width: 32%;
+    text-align: left;  /* 주요내용 좌측 정렬 (중복 허용) */
+}
+th.sortable {
+    cursor: pointer;
+}
+th.sortable:hover {
+    background-color: #e9ecef; /* 마우스 오버 시 음영 */
+}
+
+input, select, textarea {
+    /* 기본 입력란 공통 스타일 */
+    width: 300px;
+    padding: 8px;
+    margin: 4px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* form-inline 내부 전용 스타일 */
+.form-inline input,
+.form-inline textarea,
+.form-inline input[type="file"],
+.form-inline .add-button {
+    height: 36px;
+    padding: 4px 8px;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.form-inline input[name="category"] {
+    width: 120px;  /* 구분 */
+}
+.form-inline input[name="law_name"] {
+    width: 200px;  /* 법령명 */
+}
+.form-inline textarea[name="content"] {
+    width: 350px;  /* 주요내용 */
+    resize: none;
+}
+.form-inline input[type="file"] {
+    width: 200px;
+}
+.form-inline .add-button {
+    height: 30px;
+    padding: 4px 12px;
+    font-weight: bold;
+}
+
+td.content {
+    text-align: left;
+}
+
+th.related-file,
+td.related-file {
+    width: 300px;              /* ✅ 너비 넓힘 */
+    max-width: 300px;
+    min-width: 160px;
+    word-break: break-word;    /* 긴 단어 줄바꿈 */
+    text-align: center;
+    font-size: 13px;
+    padding: 10px;             /* ✅ 줄 간격 확보 */
+    vertical-align: top;       /* 위 정렬로 맞추기 */
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 24px;
+    margin: 30px auto;
+    max-width: 1100px;
+    background-color: #bcdaf7;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.search-container input[type="text"],
+.search-container input[type="date"] {
+    padding: 10px 14px;
+    border: 1px solid #87a9c5;
+    border-radius: 8px;
+    font-size: 15px;
+    width: 180px;
+    transition: 0.2s;
+}
+
+.search-container input:focus {
+    border-color: #007acc;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 122, 204, 0.2);
+}
+
+.search-container .search-icon {
+    font-size: 22px;
+    color: #007acc;
+    margin-right: 8px;
+}
+
+.search-container button {
+    padding: 10px 16px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.search-container button:hover {
+    background-color: #005f99;
+}
+
+.add-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 6px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+}

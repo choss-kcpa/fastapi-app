@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>이슈 알림 신청</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background: #f7f7f7; }
+        h1 { color: #003366; }
+        form { background: white; padding: 20px; border-radius: 10px; max-width: 400px; }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+        }
+        .message {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📩 이슈 알림 이메일 신청</h1>
+    <form method="post" action="/subscribe-alert">
+        <label for="email">이메일 주소:</label>
+        <input type="email" name="email" required>
+        <button type="submit">신청하기</button>
+    </form>
+
+    {% if message %}
+    <div class="message">{{ message }}</div>
+    {% endif %}
+</body>
+</html>

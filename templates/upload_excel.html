@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 업로드</title>
+</head>
+<body>
+    <h2>이슈 목록 대량 업로드 (Excel)</h2>
+    <form action="/upload-excel/" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit">업로드</button>
+    </form>
+</body>
+</html>

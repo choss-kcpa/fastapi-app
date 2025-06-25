@@ -1,0 +1,5 @@
+구글 클라우드 런 배포 명령어
+
+gcloud builds submit --tag gcr.io/kcpa-455507/fastapi-app
+
+gcloud run deploy fastapi-app --image gcr.io/kcpa-455507/fastapi-app --platform managed --region asia-northeast3 --allow-unauthenticated

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <script>
+            window.userRole = "{{ user.role }}";
+        </script>
+        <meta charset="UTF-8">
+        <meta name="robots" content="noindex, nofollow">
+        <title>등록보완사항 관리</title>
+        <link rel="stylesheet" href="/static/global.css?v=1002">
+    </head>
+<body>
+    <div style="text-align: right; margin-bottom: 15px;">
+        <a href="/select-menu" style="
+            display: inline-block;
+            background-color: #5faef3;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        ">메뉴선택으로</a>
+    </div>
+
+    <h1>등록보완사항 관리</h1>
+    <div class="filter-box">
+        <!-- 돋보기 아이콘 추가 -->
+        <span style="font-size: 20px;">🔍</span>
+    
+        <input type="date" id="supplementStart" onchange="filterSupplements()">
+        <input type="date" id="supplementEnd" onchange="filterSupplements()">
+    
+        <select id="categoryFilter" onchange="filterSupplements()">
+            <option value="">보완분야 전체</option>
+            <option value="이화학">이화학</option>
+            <option value="약효약해">약효약해</option>
+            <option value="잔류성">잔류성</option>
+            <option value="독성">독성</option>
+            <option value="기타">기타</option>
+        </select>
+    
+        <input type="text" id="responderFilter" placeholder="대응주체 검색" onkeyup="filterSupplements()">
+        <input type="text" id="contentFilter" placeholder="보완내용 검색" onkeyup="filterSupplements()">
+    
+        <button class="reset-btn" onclick="resetSupplementFilters()">초기화</button>
+    </div>
+    {% if user.role == 'admin' %}
+<div class="add-form">
+    <a href="/supplements/add" class="add-button">➕ 보완사항 추가</a>
+    <a href="#" class="add-button" onclick="document.getElementById('excelUpload').click()">📁 엑셀 업로드</a>
+    <form id="excelForm" action="/supplements/upload" method="post" enctype="multipart/form-data" style="display:none;">
+        <input type="file" id="excelUpload" name="file" accept=".xlsx,.xls" onchange="document.getElementById('excelForm').submit()">
+    </form>
+</div>
+{% endif %}
+<script>
+    window.userRole = "{{ user.role }}";
+    
+    let allSupplements = [];
+    let filteredSupplements = [];
+    let currentPage = 1;
+    const itemsPerPage = 7;
+    
+    function loadSupplements() {
+        fetch(`/supplements-all-data`)
+            .then(res => res.json())
+            .then(data => {
+                allSupplements = data.data;
+                filteredSupplements = allSupplements;
+                currentPage = 1;
+                displaySupplements({
+                    data: filteredSupplements,
+                    total_pages: Math.ceil(filteredSupplements.length / itemsPerPage)
+                });
+            });
+    }
+    
+    function filterSupplements() {
+        const start = document.getElementById("supplementStart").value;
+        const end = document.getElementById("supplementEnd").value;
+        const category = document.getElementById("categoryFilter").value;
+        const responder = document.getElementById("responderFilter").value.toLowerCase();
+        const content = document.getElementById("contentFilter").value.toLowerCase();
+    
+        const filtered = allSupplements.filter(item => {
+            const dateMatch = (!start || item.supplement_date >= start) &&
+                              (!end || item.supplement_date <= end);
+            const categoryMatch = !category || item.category === category;
+            const responderMatch = !responder || (item.responder && item.responder.toLowerCase().includes(responder));
+            const contentMatch = !content || (item.content && item.content.toLowerCase().includes(content));
+            return dateMatch && categoryMatch && responderMatch && contentMatch;
+        });
+    
+        filteredSupplements = filtered;
+        currentPage = 1;
+        displaySupplements({
+            data: filteredSupplements,
+            total_pages: Math.ceil(filteredSupplements.length / itemsPerPage)
+        });
+    }
+    
+    function resetSupplementFilters() {
+        document.getElementById("supplementStart").value = "";
+        document.getElementById("supplementEnd").value = "";
+        document.getElementById("categoryFilter").value = "";
+        document.getElementById("responderFilter").value = "";
+        document.getElementById("contentFilter").value = "";
+    
+        filteredSupplements = allSupplements;
+        currentPage = 1;
+        displaySupplements({
+            data: filteredSupplements,
+            total_pages: Math.ceil(filteredSupplements.length / itemsPerPage)
+        });
+    }
+    
+    function displaySupplements(apiResponse) {
+    const data = apiResponse.data;
+    const totalPages = apiResponse.total_pages;
+
+    // 기존 항목 제거
+    document.querySelectorAll(".supplement-block, .data-table").forEach(el => el.remove());
+
+    const container = document.body;
+
+    // 테이블 생성
+    const table = document.createElement("table");
+    table.className = "data-table";
+    table.style.width = "95%";
+    table.style.margin = "20px auto";
+
+    // 테이블 헤더 생성
+    table.innerHTML = `
+        <thead>
+            <tr style="background-color: #e3f2fd;">
+                <th style="width: 120px;">보완날짜</th>
+                <th style="width: 100px;">보완분야</th>
+                <th style="width: 100px;">대응주체</th>
+                <th>보완내용</th>
+                <th style="width: 200px;">관련자료</th>
+                ${window.userRole === 'admin' ? '<th style="width: 100px;">기능</th>' : ''}
+            </tr>
+        </thead>
+        <tbody id="supplementTableBody"></tbody>
+    `;
+
+    container.appendChild(table);
+    const tbody = table.querySelector("tbody");
+
+    // 데이터 렌더링
+    data
+        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        .forEach(item => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${item.supplement_date}</td>
+                <td>${item.category}</td>
+                <td>${item.responder}</td>
+                <td class="multiline" style="white-space: pre-wrap; text-align: left;">${item.content}</td>
+                <td>
+                    ${item.file_list && item.file_list.length > 0
+                        ? item.file_list.map(f => `<div><a href="/files/${f}" download>${f.split('/').pop()}</a></div>`).join('')
+                        : '없음'}
+                </td>
+                ${window.userRole === 'admin' ? `
+                    <td>
+                        <form action="/supplements/delete/${item.id}" method="post" style="margin-bottom:5px;">
+                            <button class="delete-btn">삭제</button>
+                        </form>
+                    </td>` : ''}
+            `;
+            tbody.appendChild(row);
+        });
+
+    // 페이지네이션 갱신
+    const pagination = document.getElementById("pagination");
+    pagination.innerHTML = "";
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.innerText = i;
+        btn.style.margin = "0 4px";
+        btn.style.padding = "6px 12px";
+        btn.style.borderRadius = "6px";
+        btn.style.border = "1px solid #ccc";
+        btn.style.background = i === currentPage ? "#007bff" : "#f0f0f0";
+        btn.style.color = i === currentPage ? "#fff" : "#333";
+        btn.onclick = () => {
+            currentPage = i;
+            displaySupplements({
+                data: filteredSupplements,
+                total_pages: Math.ceil(filteredSupplements.length / itemsPerPage)
+            });
+        };
+        pagination.appendChild(btn);
+    }
+}
+    
+    
+    window.onload = function () {
+        loadSupplements();
+    };
+    
+    function openResponseEditor(id) {
+        const method = prompt("대응방법(현황)을 입력하세요:");
+        if (method === null) return;
+        const result = prompt("대응결과를 입력하세요:");
+        if (result === null) return;
+    
+        fetch(`/supplements/${id}/update-response`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ response_method: method, response_result: result })
+        }).then(res => {
+            if (res.ok) loadSupplements();
+            else alert("저장 실패!");
+        });
+    }
+    </script>
+<div id="pagination" style="text-align:center; margin: 30px 0;"></div>
+</body>
+</html>

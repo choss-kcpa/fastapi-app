@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>시험설계 검토 및 관리</title>
+    <link rel="stylesheet" href="/static/test_review.css?v=2">
+</head>
+<body>
+    <div class="container">
+        <div class="top-right-buttons">
+            <a href="/select-menu" class="menu-button">메뉴 선택으로</a>
+            <a href="/logout" class="logout-button">로그아웃</a>
+        </div>
+        <h1>시험설계 검토 및 관리</h1>
+
+        <div class="search-box">
+            <form id="searchForm" onsubmit="return false;">
+                <input type="text" id="year" name="year" placeholder="시험년도" oninput="fetchFilteredData()">
+                <select id="category" name="category" onchange="fetchFilteredData()">
+                    <option value="">구분 선택</option>
+                    <option value="하작물">하작물</option>
+                    <option value="동작물">동작물</option>
+                </select>
+                <select id="field" name="field" onchange="fetchFilteredData()">
+                    <option value="">분야 선택</option>
+                    <option value="살균제">살균제</option>
+                    <option value="살충제">살충제</option>
+                    <option value="제초제">제초제</option>
+                    <option value="생조제">생조제</option>
+                </select>
+                <input type="text" name="crop_name" placeholder="작물명" oninput="fetchFilteredData()">
+                <input type="text" name="pest_name" placeholder="병해충명" oninput="fetchFilteredData()">
+                <input type="text" name="institution_name" placeholder="시험기관명" oninput="fetchFilteredData()">
+                <input type="text" name="review_type" placeholder="검토구분" oninput="fetchFilteredData()">
+                <input type="text" name="review_item" placeholder="검토사항" oninput="fetchFilteredData()">
+                <input type="text" name="review_result" placeholder="검토결과" oninput="fetchFilteredData()">
+                <button type="button" onclick="resetForm()">초기화</button>
+            </form>
+        </div>
+
+        <div class="button-group">
+            {% if user.role == 'admin' %}
+                <a href="/test-review/add" class="btn add-button">내용추가</a>
+                <a href="#" class="btn excel-button" onclick="document.getElementById('excelFileInput').click()">엑셀 업로드</a>
+                <form id="excelUploadForm" action="/test-review/upload" method="post" enctype="multipart/form-data" style="display: none;">
+                    <input type="file" id="excelFileInput" name="file" accept=".xlsx,.xls" onchange="document.getElementById('excelUploadForm').submit()">
+                </form>
+            {% endif %}
+            <a href="/test-review/download" class="btn download-button">엑셀 다운로드</a>
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>시험년도</th><th>구분</th><th>분야</th><th>작물명</th><th>병해충명</th>
+                    <th>시험기관명</th><th>검토구분</th><th>검토사항</th><th>검토결과</th>
+                    {% if user.role == 'admin' %}<th>관리</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+                {% for item in test_designs %}
+                <tr>
+                    <td>{{ item.year }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.field }}</td>
+                    <td>{{ item.crop_name }}</td>
+                    <td>{{ item.pest_name }}</td>
+                    <td>{{ item.institution_name }}</td>
+                    <td class="multiline">{{ item.review_type }}</td>
+                    <td class="multiline left-align">{{ item.review_item }}</td>
+                    <td class="multiline left-align">{{ item.review_result }}</td>
+                    {% if user.role == 'admin' %}
+                    <td>
+                        <a href="/test-review/edit/{{ item.id }}" class="btn btn-sm edit-button">수정</a>
+                        <a href="#" class="btn btn-sm delete-button" onclick="deleteTestReview( item.id )">삭제</a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination">
+        <button id="prevPage" onclick="changePage(currentPage - 1)">이전</button>
+        <span id="pageInfo"></span>
+        <div id="pageNumbers"></div> <!-- 페이지 번호 추가 -->
+        <button id="nextPage" onclick="changePage(currentPage + 1)">다음</button>
+    </div>
+
+    <script>
+let currentPage = 1;
+const pageSize = 10;
+let totalPages = 1;  // totalPages를 전역 변수로 선언
+
+function fetchFilteredData() {
+    const year = document.getElementById('year').value || '';
+    const category = document.getElementById('category').value || '';
+    const field = document.getElementById('field').value || '';
+    const crop_name = document.querySelector('input[name="crop_name"]').value || '';
+    const pest_name = document.querySelector('input[name="pest_name"]').value || '';
+    const institution_name = document.querySelector('input[name="institution_name"]').value || '';
+    const review_type = document.querySelector('input[name="review_type"]').value || '';
+    const review_item = document.querySelector('input[name="review_item"]').value || '';
+    const review_result = document.querySelector('input[name="review_result"]').value || '';
+
+    const queryParams = new URLSearchParams();
+    if (year) queryParams.append('year', year);
+    if (category) queryParams.append('category', category);
+    if (field) queryParams.append('field', field);
+    if (crop_name) queryParams.append('crop_name', crop_name);
+    if (pest_name) queryParams.append('pest_name', pest_name);
+    if (institution_name) queryParams.append('institution_name', institution_name);
+    if (review_type) queryParams.append('review_type', review_type);
+    if (review_item) queryParams.append('review_item', review_item);
+    if (review_result) queryParams.append('review_result', review_result);
+    queryParams.append('page', currentPage);
+    queryParams.append('page_size', pageSize);
+
+    const queryString = queryParams.toString();
+
+    fetch(`/test-review/data?${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('#resultsBody');
+            tbody.innerHTML = ''; // Clear the current table content
+
+            data.data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.year}</td>
+                    <td>${item.category}</td>
+                    <td>${item.field}</td>
+                    <td>${item.crop_name}</td>
+                    <td>${item.pest_name}</td>
+                    <td>${item.institution_name}</td>
+                    <td class="multiline">${item.review_type}</td>
+                    <td class="multiline left-align">${item.review_item}</td>
+                    <td class="multiline left-align">${item.review_result}</td>
+                `;
+
+                if (data.user_role === 'admin') {
+    row.innerHTML += `
+        <td>
+            <a href="/test-review/edit/${item.id}" class="btn btn-sm edit-button">수정</a>
+            <form action="/test-review/delete/${item.id}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-sm delete-button">삭제</button>
+            </form>
+        </td>
+    `;
+}
+
+                tbody.appendChild(row);
+            });
+
+            totalPages = data.total_pages;
+            document.getElementById('pageInfo').innerText = `Page ${data.page} of ${data.total_pages}`;
+            document.getElementById('prevPage').disabled = data.page <= 1;
+            document.getElementById('nextPage').disabled = data.page >= data.total_pages;
+
+            updatePageNumbers(data.page, totalPages);
+        })
+        .catch(err => console.log("Error fetching data:", err));
+}
+
+// Update page numbers to show only 6 pages (3 before and 3 after current page)
+function updatePageNumbers(currentPage, totalPages) {
+    const pageNumbersContainer = document.getElementById('pageNumbers');
+    pageNumbersContainer.innerHTML = ''; // Clear current page numbers
+
+    let startPage = Math.max(currentPage - 3, 1);
+    let endPage = Math.min(currentPage + 3, totalPages);
+
+    // If there are fewer than 6 pages, adjust the range to show the remaining pages
+    if (endPage - startPage < 5) {
+        startPage = Math.max(endPage - 5, 1);
+    }
+
+    // Generate page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.onclick = () => changePage(i);
+        pageNumbersContainer.appendChild(pageButton);
+    }
+}
+
+function changePage(pageNumber) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        currentPage = pageNumber;
+        fetchFilteredData();
+}}
+
+function resetForm() {
+    document.getElementById('searchForm').reset();
+    fetchFilteredData();
+}
+function deleteTestReview(id) {
+    if (confirm("정말로 삭제하시겠습니까?")) {
+        fetch(`/test-review/delete/${id}`, {
+            method: 'POST',  // 여기만 수정!
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            fetchFilteredData(); // 삭제 후 갱신
+        })
+        .catch(err => console.error("삭제 중 오류 발생", err));
+    }
+}
+window.onload = fetchFilteredData;
+    </script>
+</body>
+</html>

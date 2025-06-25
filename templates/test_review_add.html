@@ -1,0 +1,65 @@
+<!-- templates/test_review_add.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>시험설계 항목 추가</title>
+    <link rel="stylesheet" href="/static/test_review.css">
+    <style>
+        textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            font-size: 14px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>시험설계 신규 항목 추가</h1>
+        <form action="/test-review/add" method="post" class="form-box">
+            <label>시험년도:</label>
+            <input type="number" name="year" required>
+
+            <label>구분:</label>
+            <select name="category">
+                <option value="하작물">하작물</option>
+                <option value="동작물">동작물</option>
+            </select>
+
+            <label>분야:</label>
+            <select name="field">
+                <option value="살균제">살균제</option>
+                <option value="살충제">살충제</option>
+                <option value="제초제">제초제</option>
+                <option value="생조제">생조제</option>
+            </select>
+
+            <label>작물명:</label>
+            <input type="text" name="crop_name" required>
+
+            <label>병해충명:</label>
+            <input type="text" name="pest_name" required>
+
+            <label>시험기관명:</label>
+            <input type="text" name="institution_name" required>
+
+            <label>검토구분:</label>
+            <textarea name="review_type" required></textarea>
+
+            <label>검토사항:</label>
+            <textarea name="review_item"></textarea>
+
+            <label>검토결과:</label>
+            <textarea name="review_result"></textarea>
+
+            <div class="form-actions">
+                <button type="submit" class="btn add-button">저장</button>
+                <button type="button" class="btn cancel-button" onclick="window.location.href='/test-review'">취소</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

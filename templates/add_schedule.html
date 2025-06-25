@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>주요 일정 추가</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f8f8ff;
+        }
+        form {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h2>주요 일정 추가</h2>
+<form method="post" action="/schedule/add">
+    <label for="start_date">시작일</label>
+    <input type="date" id="start_date" name="start_date" required>
+
+    <label for="end_date">종료일</label>
+    <input type="date" id="end_date" name="end_date">
+
+    <label for="title">내용</label>
+    <input type="text" id="title" name="title" required>
+
+    <label for="location">장소</label>
+    <input type="text" id="location" name="location">
+
+    <button type="submit">일정 추가</button>
+</form>
+
+</body>
+</html>

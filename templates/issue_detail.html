@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 상세 정보</title>
+    <style>
+        .issue-detail-title {
+             font-size: 45px; /* 글씨 크기 키우기 */
+             font-weight: bold; /* 굵게 */
+             margin-bottom: 20px;
+             text-align: center; /* 중앙 정렬 */
+             width: 100%; /* 제목이 전체 너비를 차지하게 설정 */
+         }
+         body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: linear-gradient(to right,#f8f1ff, #fdfbff); /* 아주 연한 보라 그라데이션 */
+    background-attachment: fixed;
+}
+
+.top-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.issue-detail-title {
+    font-size: 42px;
+    font-weight: bold;
+    margin-top: 0px;     /* ✅ 추가 가능 */
+    margin-bottom: 4px;
+    text-align: center;
+    color: #003366;
+}  
+        .back-btn {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            width: 120px;
+            border-radius: 5px;
+        }
+        .back-btn:hover {
+            background-color: #218838;
+        }
+        .logout-btn {
+        padding: 10px 15px;
+        background-color: #dc3545; /* 빨간색 */
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        width: 120px;
+        border-radius: 5px;
+        margin-left: 10px;
+        }
+        .logout-btn:hover {
+        background-color: #c82333; /* 더 진한 빨간색 */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f3e8ff;
+        }
+        .small-col {
+            width: 10%;
+            text-align: center;
+        }
+        .large-col {
+            width: 50%;
+            font-size: 1.1em;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- ✅ 상단 바: 제목 + "이슈 목록으로" 버튼 -->
+    <div class="top-bar">
+        <div class="top-buttons"> <!-- ✅ 이게 맞는 클래스 -->
+        <button class="back-btn" onclick="location.href='/issues'">이슈 목록으로</button> 
+        <button class="logout-btn" onclick="location.href='/logout'" style="margin-left: 10px;">로그아웃</button>
+    </div>
+    <h2 class="issue-detail-title">이슈 상세 정보</h2>
+    </div>
+   
+    <table>
+        <thead>
+            <tr>
+                <th>이슈 번호</th>
+                <th>이슈명</th>
+                <th>발생일</th>
+                <th>대응 기간</th>
+                <th>카테고리</th>
+                <th>대응팀</th>
+                <th>정부 관계자</th>
+                <th>Business Impact</th>
+                <th>KPI</th>
+                <th>이슈 종료일(예정일)</th>
+                <th>이해관계자</th>
+                <th>결과 요약</th>
+                <th>완료 여부</th>
+                <th>기타 사항</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="issue_number"></td>
+                <td id="issue_name"></td>
+                <td id="issue_date"></td>
+                <td id="response_period"></td>
+                <td id="category"></td>
+                <td id="response_team"></td>
+                <td id="government_officials"></td>
+                <td id="business_impact"></td>
+                <td id="kpi"></td>
+                <td id="issue_end_date"></td>
+                <td id="stakeholders"></td>
+                <td id="result_summary"></td>
+                <td id="completion_status"></td>
+                <td id="other_remarks"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>세부 진행 사항</h3>
+    <table>
+        <thead>
+            <tr>
+                <th class="small-col">날짜</th>
+                <th class="large-col">내용</th>
+                <th>관련 자료</th>
+                <th class="small-col admin-only">수정</th>
+                <th class="small-col admin-only">삭제</th>
+            </tr>
+        </thead>
+        <tbody id="detailsTableBody">
+            <!-- JavaScript로 데이터 채우기 -->
+        </tbody>
+    </table>
+    
+    <div style="text-align: right; margin-top: 10px;">
+        <button class="download-btn" onclick="downloadIssueDetails()">세부 진행 사항 다운로드</button>
+    </div>
+    
+    <script>
+        function uploadExcel() {
+            const issueId = window.location.pathname.split("/")[2];  // 현재 이슈 ID 가져오기
+            const fileInput = document.getElementById("excelFileInput");
+    
+            if (!fileInput.files.length) {
+                alert("엑셀 파일을 선택하세요.");
+                return;
+            }
+    
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+    
+            fetch(`/issues/${issueId}/details/upload-excel/`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert("업로드 실패: " + JSON.stringify(data));
+                }
+            })
+            .catch(error => {
+                console.error("엑셀 업로드 중 오류 발생:", error);
+                alert("업로드 중 오류가 발생했습니다.");
+            });
+        }
+    </script>
+
+    <script>
+        function downloadIssueDetails() {
+            const issueId = window.location.pathname.split("/")[2]; // 현재 페이지의 이슈 ID
+            const downloadUrl = `/issues/${issueId}/details/download`;
+            window.location.href = downloadUrl;
+        }
+    </script>
+    
+    <style>
+        .download-btn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        .download-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+         <!-- ✅ 관리자만 보이는 추가 버튼 -->
+<div class="admin-only" style="margin-top: 20px;">
+    <button onclick="goToAddDetail()" style="padding: 10px 20px; font-size: 16px;">세부 진행 사항 추가하기</button>
+</div>
+    <h3 class="admin-only">세부 진행 사항 엑셀 업로드</h3>
+        <div class="admin-only">
+        <input type="file" id="excelFileInput">
+        <button onclick="uploadExcel()">업로드</button>
+    </div>
+
+
+    <script>
+                let isAdmin = false;
+
+        async function checkUserRole() {
+            try {
+                const response = await fetch("/current-user");
+                const data = await response.json();
+
+                if (data.role === "admin") {
+                    isAdmin = true;
+                }
+
+                // ✅ 이용자(user)일 경우 버튼 숨김
+                if (!isAdmin) {
+                    document.querySelectorAll(".admin-only").forEach(el => el.classList.add("hidden"));
+                }
+            } catch (error) {
+                console.error("사용자 정보를 가져오는 중 오류 발생:", error);
+            }
+        }
+
+        async function addDetail() {
+    const issueId = window.location.pathname.split("/")[2]; // 현재 페이지의 이슈 ID
+    const date = document.getElementById("detailDate").value;
+    const content = document.getElementById("detailContent").value; // ✅ textarea에서 값 가져오기
+    const fileInput = document.getElementById("detailFiles");
+
+    if (!date || !content) {
+        alert("날짜와 내용을 입력해주세요.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("date", date);
+    formData.append("content", content); // ✅ 줄바꿈 포함하여 전송
+
+    // 파일이 선택된 경우만 추가
+    for (const file of fileInput.files) {
+        formData.append("files", file);
+    }
+
+    try {
+        const response = await fetch(`/issues/${issueId}/details`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (response.ok) {
+            alert("세부 진행 사항이 추가되었습니다.");
+            location.reload(); // 새로고침하여 리스트 업데이트
+        } else {
+            const errorData = await response.json();
+            alert(`오류 발생: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error("세부 진행 사항 추가 중 오류 발생:", error);
+        alert("추가 중 오류가 발생했습니다.");
+    }
+}
+
+        function editDetail(detailId) {
+            window.location.href = `/issue/detail-edit/${detailId}`;
+        }
+
+        async function deleteDetail(detailId) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        try {
+            const response = await fetch(`/issues/detail/${detailId}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                alert("진행 사항이 삭제되었습니다.");
+                location.reload();
+            } else {
+                const errorData = await response.json();
+                alert(`오류 발생: ${errorData.detail}`);
+            }
+        } catch (error) {
+            console.error("진행 사항 삭제 중 오류 발생:", error);
+            alert("삭제 중 오류가 발생했습니다.");
+        }
+    }
+
+        async function loadIssueDetails() {
+            const issueId = window.location.pathname.split("/")[2];
+
+            // ✅ 1. 이슈 기본 정보 불러오기
+            const issueResponse = await fetch(`/issues/${issueId}`);
+            const issueData = await issueResponse.json();
+            if (issueData.data) {
+                document.getElementById("issue_number").innerText = issueData.data.issue_number;
+                document.getElementById("issue_name").innerText = issueData.data.issue_name;
+                document.getElementById("issue_date").innerText = issueData.data.issue_date;
+                document.getElementById("response_period").innerText = issueData.data.response_period;
+                document.getElementById("category").innerText = issueData.data.category;
+                document.getElementById("response_team").innerText = issueData.data.response_team;
+                document.getElementById("government_officials").innerText = issueData.data.government_officials;
+                document.getElementById("business_impact").innerText = issueData.data.business_impact;
+                document.getElementById("kpi").innerText = issueData.data.kpi;
+                document.getElementById("issue_end_date").innerText = issueData.data.issue_end_date;
+                document.getElementById("stakeholders").innerText = issueData.data.stakeholders;
+                document.getElementById("result_summary").innerText = issueData.data.result_summary;
+                document.getElementById("completion_status").innerText = issueData.data.completion_status;
+                document.getElementById("other_remarks").innerText = issueData.data.other_remarks;
+            }
+
+            // ✅ 2. 세부 진행 사항 불러오기
+            const detailsResponse = await fetch(`/issues/${issueId}/details`);
+            const detailsData = await detailsResponse.json();
+            const detailsTableBody = document.getElementById("detailsTableBody");
+
+            detailsTableBody.innerHTML = "";
+
+            detailsData.data.forEach(detail => {
+    const row = document.createElement("tr");
+    
+    let fileLinks = "첨부 없음";
+if (detail.file_paths && detail.file_paths.length > 0) {
+    fileLinks = detail.file_paths.map(file => {
+        const fileName = file.split('/').pop();  // 폴더 경로 제거하고 파일명만 추출
+        return `<a href="/files/${encodeURIComponent(file)}" download>${decodeURIComponent(fileName)}</a>`;
+    }).join("<br>");
+}
+
+    row.innerHTML = `
+        <td class="small-col">${detail.date}</td>
+        <td class="large-col" style="white-space: pre-wrap;">${detail.content}</td>
+        <td>${fileLinks}</td>
+        <td class="small-col admin-only"><button onclick="editDetail(${detail.id})">수정</button></td>
+        <td class="small-col admin-only"><button onclick="deleteDetail(${detail.id})">삭제</button></td>
+    `;
+    detailsTableBody.appendChild(row);
+});
+
+            checkUserRole();
+        }
+
+        checkUserRole();
+        loadIssueDetails();
+
+        function goToAddDetail() {
+    const issueId = window.location.pathname.split("/")[2];
+    window.location.href = `/issue/${issueId}/add-detail`;
+}
+    </script>
+
+</body>
+</html>

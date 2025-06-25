@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <title>이슈 통계 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .chart-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 40px;
+    }
+    canvas {
+      width: 400px !important;
+      height: 300px !important;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .chart-wrapper {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    }
+    .chart-center-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    }
+    #chartModal canvas {
+    max-width: 90vw;
+    max-height: 90vh;
+    }
+  </style>
+</head>
+<body>
+  <h1>이슈 통계 대시보드</h1>
+
+  <div class="chart-container">
+  <!-- 도넛 차트 (wrapper 포함) -->
+  <div class="chart-wrapper">
+    <div class="chart-center-text" id="completionText">0%</div>
+    <canvas id="completionChart"></canvas>
+  </div>
+
+  <!-- 카테고리 -->
+  <canvas id="categoryChart"></canvas>
+
+  <!-- 영향도 -->
+  <canvas id="impactChart"></canvas>
+<!-- 연도별 -->
+  <canvas id="yearChart"></canvas>
+
+  <h1 style="text-align:center; width: 100%;">현안 검토건의 통계 대시보드</h1>
+  <canvas id="proposalChart"></canvas>
+
+  <h1 style="text-align:center; width: 100%;">실무협의체 통계</h1>
+  <div class="chart-container">
+    <canvas id="wgChart"></canvas>
+  </div>
+
+  <h1 style="text-align:center; width: 100%;">등록보완사항 통계</h1>
+  <div class="chart-container">
+  <canvas id="supplementYearChart"></canvas>
+  <canvas id="supplementCategoryChart"></canvas>
+  </div>
+
+  <h1 style="text-align:center; width: 100%;">시험설계 검토 및 관리 통계</h1>
+    <div class="chart-container">
+    <canvas id="testReviewFieldChart"></canvas>
+    <canvas id="testReviewYearChart"></canvas>
+    </div>
+
+<!-- 모달 영역 -->
+    <div id="chartModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+    <canvas id="modalChart" style="background:white; border-radius:10px; max-width:90vw; max-height:90vh; padding:20px;"></canvas>
+    </div>
+
+    <script>
+        let modal = document.getElementById("chartModal");
+        let modalCanvas = document.getElementById("modalChart");
+        let modalChart = null;
+        
+        function attachZoomHandlers() {
+          document.querySelectorAll("canvas").forEach(canvas => {
+            canvas.style.cursor = "zoom-in";
+            canvas.addEventListener("click", () => {
+              const chart = Chart.getChart(canvas);
+              if (!chart) return;
+              modal.style.display = "flex";
+              setTimeout(() => {
+                if (modalChart) modalChart.destroy();
+                modalChart = new Chart(modalCanvas.getContext("2d"), structuredClone(chart.config));
+              }, 50);
+            });
+          });
+        
+          modal.addEventListener("click", () => {
+            modal.style.display = "none";
+            if (modalChart) {
+              modalChart.destroy();
+              modalChart = null;
+            }
+          });
+        }
+        
+        Promise.all([
+          fetch("/api/stats/summary").then(res => res.json()),
+          fetch("/api/stats/proposals").then(res => res.json())
+        ]).then(([summary, proposals]) => {
+          const completionRate = summary.total > 0
+            ? Math.round((summary.completed / summary.total) * 100)
+            : 0;
+          document.getElementById("completionText").innerText = `${completionRate}%`;
+        
+          new Chart(document.getElementById('completionChart'), {
+            type: 'doughnut',
+            data: {
+              labels: ['완료', '진행중'],
+              datasets: [{
+                data: [summary.completed, summary.in_progress],
+                backgroundColor: ['#4caf50', '#f44336']
+              }]
+            },
+            options: {
+              plugins: {
+                title: { display: true, text: `이슈 완료율 (${completionRate}%)` },
+                tooltip: {
+                  callbacks: {
+                    label: function (context) {
+                      const label = context.label || '';
+                      const value = context.parsed;
+                      const percent = Math.round((value / summary.total) * 100);
+                      return `${label}: ${value}건 (${percent}%)`;
+                    }
+                  }
+                }
+              },
+              cutout: '60%'
+            }
+          });
+        
+          new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+              labels: Object.keys(summary.category_count),
+              datasets: [{
+                label: '카테고리별 이슈 수',
+                data: Object.values(summary.category_count),
+                backgroundColor: '#2196f3'
+              }]
+            },
+            options: {
+              plugins: {
+                title: { display: true, text: '카테고리별 이슈 수' }
+              },
+              responsive: true,
+              indexAxis: 'x',
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 }
+                }
+              }
+            }
+          });
+        
+          const issueYearLabels = Object.keys(summary.year_counts).sort();
+          const issueYearData = issueYearLabels.map(year => summary.year_counts[year]);
+          new Chart(document.getElementById('yearChart'), {
+            type: 'bar',
+            data: {
+              labels: issueYearLabels,
+              datasets: [{
+                label: '년도별 이슈 발생 수',
+                data: issueYearData,
+                backgroundColor: '#8e24aa'
+              }]
+            },
+            options: {
+              plugins: {
+                title: { display: true, text: '년도별 이슈 발생 수' }
+              },
+              responsive: true,
+              indexAxis: 'x',
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 }
+                }
+              }
+            }
+          });
+        
+          new Chart(document.getElementById('impactChart'), {
+            type: 'pie',
+            data: {
+              labels: ['높음', '중간', '낮음'],
+              datasets: [{
+                label: '영향도 분포',
+                data: [
+                  summary.impact_count.High || 0,
+                  summary.impact_count.Medium || 0,
+                  summary.impact_count.Low || 0
+                ],
+                backgroundColor: ['#e53935', '#ffb300', '#43a047']
+              }]
+            },
+            options: {
+              plugins: {
+                title: { display: true, text: '영향도 분포' }
+              }
+            }
+          });
+        
+          const proposalYearLabels = Object.keys(proposals.year_counts).sort();
+          const proposalYearData = proposalYearLabels.map(y => proposals.year_counts[y]);
+          new Chart(document.getElementById('proposalChart'), {
+            type: 'bar',
+            data: {
+              labels: proposalYearLabels,
+              datasets: [{
+                label: '연도별 건의 건수',
+                data: proposalYearData,
+                backgroundColor: '#1976d2'
+              }]
+            },
+            options: {
+              plugins: {
+                title: { display: true, text: '현안검토건의 – 연도별 건의 건수' }
+              },
+              responsive: true,
+              indexAxis: 'x',
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { precision: 0 }
+                }
+              }
+            }
+          });
+        
+          // ✅ 모든 차트 생성 후 확대 이벤트 연결
+          attachZoomHandlers();
+        });
+        
+        fetch("/api/stats/wg").then(res => res.json()).then(data => {
+          const labels = [...new Set(Object.values(data).flatMap(obj => Object.keys(obj)))].sort();
+          const datasets = Object.entries(data).map(([label, counts], idx) => ({
+            label,
+            data: labels.map(year => counts[year] || 0),
+            backgroundColor: ['#4caf50', '#f44336', '#2196f3', '#ff9800'][idx]
+          }));
+        
+          new Chart(document.getElementById("wgChart"), {
+            type: 'bar',
+            data: { labels, datasets },
+            options: {
+              responsive: true,
+              plugins: {
+                title: { display: true, text: '실무협의체 분야별 연도별 활동 건수' }
+              },
+              indexAxis: 'x',
+              scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+            }
+          });
+        });
+        
+        fetch("/api/stats/supplements").then(res => res.json()).then(data => {
+          const yearLabels = Object.keys(data.year_counts).sort();
+          const yearData = yearLabels.map(year => data.year_counts[year]);
+        
+          new Chart(document.getElementById("supplementYearChart"), {
+            type: 'bar',
+            data: {
+              labels: yearLabels,
+              datasets: [{
+                label: '연도별 등록보완사항 수',
+                data: yearData,
+                backgroundColor: '#009688'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: { display: true, text: '연도별 등록보완사항 수' }
+              },
+              indexAxis: 'x',
+              scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+            }
+          });
+        
+          const categoryLabels = Object.keys(data.category_counts);
+          const categoryData = categoryLabels.map(cat => data.category_counts[cat]);
+          new Chart(document.getElementById("supplementCategoryChart"), {
+            type: 'bar',
+            data: {
+              labels: categoryLabels,
+              datasets: [{
+                label: '보완 분야별 등록 수',
+                data: categoryData,
+                backgroundColor: '#ff7043'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: { display: true, text: '보완 분야별 등록 수' }
+              },
+              indexAxis: 'x',
+              scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+            }
+          });
+        });
+        
+        fetch("/api/stats/test-reviews").then(res => res.json()).then(data => {
+          const fieldLabels = Object.keys(data.field_counts);
+          const fieldData = fieldLabels.map(f => data.field_counts[f]);
+          new Chart(document.getElementById("testReviewFieldChart"), {
+            type: 'bar',
+            data: {
+              labels: fieldLabels,
+              datasets: [{
+                label: '분야별 시험 검토 수',
+                data: fieldData,
+                backgroundColor: '#5c6bc0'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: { display: true, text: '분야별 시험 검토 수' }
+              },
+              indexAxis: 'x',
+              scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+            }
+          });
+        
+          const yearLabels = Object.keys(data.year_counts).sort();
+          const yearData = yearLabels.map(y => data.year_counts[y]);
+          new Chart(document.getElementById("testReviewYearChart"), {
+            type: 'bar',
+            data: {
+              labels: yearLabels,
+              datasets: [{
+                label: '연도별 시험 검토 수',
+                data: yearData,
+                backgroundColor: '#26a69a'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                title: { display: true, text: '연도별 시험 검토 수' }
+              },
+              indexAxis: 'x',
+              scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 } }
+              }
+            }
+          });
+        });
+        </script>
+</body>
+</html>

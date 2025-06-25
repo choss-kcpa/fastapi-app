@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이슈 등록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        input, select, textarea {
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);  /* 2열 구성 */
+            gap: 10px 40px;
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        .company-item {
+            display: grid;
+            grid-template-columns: auto 20px; /* 왼쪽: 이름 / 오른쪽: 체크박스 고정 너비 */
+            align-items: center;
+            white-space: nowrap;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>이슈 등록</h2>
+    <form method="post" action="/create-issue">
+        <label>이슈 번호:</label>
+        <input type="text" name="issue_number" required>
+    
+        <label>이슈명:</label>
+        <input type="text" name="issue_name" required>
+    
+        <label>발생일:</label>
+        <input type="date" name="issue_date" required>
+    
+        <label>대응기간:</label>
+        <select name="response_period">
+            <option value="단기">단기</option>
+            <option value="중기">중기</option>
+            <option value="장기">장기</option>
+        </select>
+    
+        <label>카테고리:</label>
+        <select name="category">
+            <option value="제도">제도</option>
+            <option value="생물">생물</option>
+            <option value="안전성">안전성</option>
+            <option value="기타">기타</option>
+        </select>
+    
+        <label>대응팀:</label>
+        <input type="text" name="response_team" required>
+    
+        <label>정부 관계자:</label>
+        <input type="text" name="government_officials" required>
+    
+        <label>Business Impact:</label>
+        <select name="business_impact">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+    
+        <label>KPI:</label>
+        <input type="text" name="kpi" required>
+    
+        <label>이슈 종료일(예정일):</label>
+        <input type="text" name="issue_end_date" placeholder="예: 2025-12-31 또는 '미정'" required>
+    
+        <label>이해관계자:</label>
+        <input type="text" name="stakeholders" required>
+    
+        <label>결과 요약:</label>
+        <textarea name="summary"></textarea>
+    
+        <label>완료 여부:</label>
+        <select name="completion_status">
+            <option value="진행중">진행중</option>
+            <option value="완료">완료</option>
+        </select>
+    
+        <label>기타 사항:</label>
+        <textarea name="remarks"></textarea>
+    
+        <label>
+            <input type="checkbox" name="is_hidden">
+            이 이슈를 일반 사용자에게 숨기기
+        </label>
+    
+        <hr>
+        <label><strong>이슈 공유 대상 (회사별 체크박스)</strong></label>
+        <div class="company-grid">
+            {% for username, user in USERS.items() %}
+                {% if user.role == 'user' %}
+                    <div class="company-item">
+                        <span>{{ user.display_name }}</span>
+                        <input type="checkbox" name="authorized_users" value="{{ username }}">
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    
+        <button type="submit">이슈 등록</button>
+    </form>
+
+</body>
+</html>

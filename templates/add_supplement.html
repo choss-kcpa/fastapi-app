@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>보완사항 신규 등록</title>
+    <link rel="stylesheet" href="/static/global.css?v=1002">
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .form-container h1 {
+            text-align: center;
+            color: #003366;
+        }
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-container label {
+            font-weight: bold;
+            color: #003366;
+        }
+        .form-container input, .form-container select {
+            padding: 10px;
+            font-size: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        .form-container button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #218838;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #007BFF;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>보완사항 신규 등록</h1>
+        <form action="/supplements/add" method="post" enctype="multipart/form-data">
+            <label>보완날짜</label>
+            <input type="date" name="supplement_date" required>
+
+            <label>보완분야</label>
+            <select name="category" required>
+                <option value="">선택</option>
+                <option value="이화학">이화학</option>
+                <option value="약효약해">약효약해</option>
+                <option value="잔류성">잔류성</option>
+                <option value="독성">독성</option>
+                <option value="기타">기타</option>
+            </select>
+
+            <label>보완내용</label>
+            <input type="text" name="content" required>
+
+            <label>대응주체</label>
+            <input type="text" name="responder" required>
+
+            <label>관련자료 첨부</label>
+            <input type="file" name="related_files" multiple>
+
+            <button type="submit">등록</button>
+        </form>
+        <a class="back-link" href="/supplements">← 목록으로 돌아가기</a>
+    </div>
+</body>
+</html>

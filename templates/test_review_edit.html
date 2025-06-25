@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <title>시험설계 수정</title>
+    <style>
+        textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        form {
+            max-width: 600px;
+            margin: 30px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">시험설계 수정</h1>
+    <form method="post">
+        <label for="year">시험년도</label>
+        <input type="text" name="year" value="{{ test_design.year }}" required>
+
+        <label for="category">구분</label>
+        <input type="text" name="category" value="{{ test_design.category }}" required>
+
+        <label for="field">분야</label>
+        <input type="text" name="field" value="{{ test_design.field }}" required>
+
+        <label for="crop_name">작물명</label>
+        <input type="text" name="crop_name" value="{{ test_design.crop_name }}" required>
+
+        <label for="pest_name">병해충명</label>
+        <input type="text" name="pest_name" value="{{ test_design.pest_name }}" required>
+
+        <label for="institution_name">시험기관명</label>
+        <input type="text" name="institution_name" value="{{ test_design.institution_name }}" required>
+
+        <label for="review_type">검토구분</label>
+        <textarea name="review_type" required>{{ test_design.review_type }}</textarea>
+
+        <label for="review_item">검토사항</label>
+        <textarea name="review_item">{{ test_design.review_item }}</textarea>
+
+        <label for="review_result">검토결과</label>
+        <textarea name="review_result">{{ test_design.review_result }}</textarea>
+
+        <button type="submit">저장</button>
+    </form>
+</body>
+</html>

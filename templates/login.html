@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/static/styles.css?v=3">
+</head>
+<body>
+    <div class="container">
+        <!-- 시스템 제목 -->
+        <h1 class="system-title">농약 현안 관리 시스템</h1>
+
+        <!-- 로그인 박스 -->
+        <div class="login-box">
+            <img src="/static/logo.png" alt="협회 로고" class="logo">
+            <h2>로그인</h2>
+
+            <form action="/login" method="post">
+                <!-- 드롭다운: 회사 선택 (스타일 적용 포함) -->
+                <select name="username" required style="width: 400px; padding: 10px; margin-bottom: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;">
+                    <option value="" disabled selected>회사 선택</option>
+                    {% for key, user in company_users.items() %}
+                        <option value="{{ key }}">{{ user.display_name }}</option>
+                    {% endfor %}
+                </select>
+            
+                <input type="password" name="password" placeholder="비밀번호" required>
+                <button type="submit">로그인</button>
+            </form>
+            
+            <p style="text-align: center; margin-top: 10px;">
+                <a href="/admin-login" style="font-size: 12px; color: #666;">관리자 로그인</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

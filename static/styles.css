@@ -1,0 +1,122 @@
+/* 전체 페이지 중앙 정렬 */
+body {
+    font-family: 'Arial', sans-serif;
+    background: url("/static/images/farm_background.jpg") no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+/* 시스템 제목 - 중앙 정렬 */
+.system-title {
+    font-size: 5vw;  /* 💡 뷰포트 너비 기준 폰트 크기 */
+    font-weight: bold;
+    color: #006400;  /* 초록색 */
+    text-align: center; /* 중앙 정렬 */
+    margin-bottom: 30px; /* 여백 추가 */
+}
+
+
+/* 로그인 박스 */
+.login-box {
+    width: 90%;
+    max-width: 600px;  /* 💡 최대 너비 제한 */
+    background: rgb(182, 202, 188);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0px 0px 20px rgba(218, 176, 176, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 내부 요소 중앙 정렬 */
+    text-align: center; /* 글자 중앙 정렬 */
+}
+
+/* 로고 */
+.logo {
+    width: 100%;
+    max-width: 400px;  /* 💡 너무 커지지 않게 제한 */
+    height: auto;
+    margin-bottom: 20px;
+}
+
+/* 입력 필드 */
+.login-box input {
+    width: 380px;  /* 가득 차도록 */
+    height: 50px;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center; /* 입력 필드 텍스트도 중앙 정렬 */
+}
+
+/* 로그인 버튼 */
+.login-box button {
+    width: 400px; /* 가득 차도록 */
+    height: 70px;
+    background-color: #004792;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    align-items: center; 
+}
+
+.login-box button:hover {
+    background-color: #0056b3;
+}
+
+.login-box select {
+    width: 100%;
+    height: 70px;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 18px;
+    border: 4px solid #101109;
+    border-radius: 5px;
+    text-align: center;
+    background-color: rgb(253, 239, 232);  /* 배경 흰색으로 */
+    appearance: auto;         /* 🔸 드롭다운 표시 복원 */
+    -webkit-appearance: auto; /* 🔸 크롬/사파리 호환 */
+    -moz-appearance: auto;    /* 🔸 파이어폭스 호환 */
+}
+
+@media screen and (max-width: 600px) {
+    body {
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    h1 {
+        font-size: 24px;
+        text-align: center;
+    }
+
+    .login-box {
+        width: 100% !important;
+        padding: 20px !important;
+        box-sizing: border-box;
+    }
+
+    select, input[type="password"], button {
+        font-size: 16px;
+        padding: 12px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .login-box label {
+        font-size: 16px;
+    }
+}
